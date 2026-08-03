@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAG Vector Store Demo</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="dark-mode">
+    <div class="app-container glass-panel">
+        <!-- Sidebar -->
+        <aside class="sidebar glass-panel">
+            <div class="logo-area">
+                <i data-lucide="database" class="logo-icon"></i>
+                <h1 class="logo-text">RAG <span class="accent-text">Store</span></h1>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-target="chat-tab">
+                    <i data-lucide="message-square"></i> RAG Chat Agent
+                </button>
+                <button class="nav-btn" data-target="search-tab">
+                    <i data-lucide="search"></i> Vector Search
+                </button>
+                <button class="nav-btn" data-target="docs-tab">
+                    <i data-lucide="file-text"></i> Document Studio
+                </button>
+                <button class="nav-btn" data-target="chunk-tab">
+                    <i data-lucide="layers"></i> Chunking Lab
+                </button>
+            </nav>
+
+            <div class="config-panel glass-panel">
+                <h2 class="section-title"><i data-lucide="settings"></i> Configuration</h2>
+                
+                <div class="form-group">
+                    <label>Embedder</label>
+                    <input type="text" id="embedder-select" class="glass-input" value="OpenAI API" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label>Chunking Strategy</label>
+                    <select id="chunker-select" class="glass-input">
+                        <option value="fixed">Fixed Size</option>
+                        <option value="sentence">By Sentences</option>
+                        <option value="recursive">Recursive</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Chunk Size</label>
+                    <input type="number" id="chunk-size-input" class="glass-input" value="500">
+                </div>
+
+                <button id="apply-config-btn" class="btn btn-primary w-full">Apply Config</button>
+
+                <div class="stats-panel">
+                    <div class="stat-item">
+                        <span class="stat-label">Documents</span>
+                        <span id="stat-docs" class="stat-value highlight">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Vector Chunks</span>
+                        <span id="stat-chunks" class="stat-value highlight">0</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="theme-toggle">
+                <button id="theme-btn" class="icon-btn">
+                    <i data-lucide="sun" id="theme-icon"></i>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- TAB: CHAT -->
+            <section id="chat-tab" class="tab-content active">
+                <div class="chat-container">
+                    <div class="chat-header">
+                        <h2><i data-lucide="bot"></i> Knowledge Base Agent</h2>
+                        <p class="subtitle">Ask questions based on your ingested documents</p>
+                    </div>
+                    
+                    <div id="chat-history" class="chat-history scroll-y">
+                        <!-- Messages go here -->
+                        <div class="message ai-message glass-panel fade-in">
+                            <div class="avatar"><i data-lucide="bot"></i></div>
+                            <div class="message-content">Hello! I am ready to answer questions based on the knowledge base. What would you like to know?</div>
+                        </div>
+                    </div>
+
+                    <div class="chat-input-area glass-panel">
+                        <input type="text" id="chat-input" placeholder="Type your question..." class="glass-input">
+                        <button id="send-chat-btn" class="btn btn-primary icon-btn">
+                            <i data-lucide="send"></i>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB: SEARCH -->
+            <section id="search-tab" class="tab-content">
+                <div class="header-banner">
+                    <h2>Semantic Vector Search</h2>
+                    <p>Search chunks by similarity with optional metadata filtering</p>
+                </div>
+                
+                <div class="search-controls glass-panel">
+                    <div class="search-bar">
+                        <i data-lucide="search" class="search-icon"></i>
+                        <input type="text" id="search-query" class="glass-input" placeholder="Search the vector store...">
+                        <button id="run-search-btn" class="btn btn-primary">Search</button>
+                    </div>
+                    
+                    <div class="filters-area mt-4">
+                        <h4 class="text-sm text-muted mb-2">Metadata Filters:</h4>
+                        <div class="filter-group">
+                            <input type="text" id="filter-audience" class="glass-input form-sm" placeholder="Audience (e.g., student)">
+                            <input type="text" id="filter-department" class="glass-input form-sm" placeholder="Department">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="search-results" class="results-area scroll-y mt-4">
+                    <div class="empty-state">
+                        <i data-lucide="search" class="empty-icon"></i>
+                        <p>Enter a query to search the vector database</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB: DOCUMENTS -->
+            <section id="docs-tab" class="tab-content">
+                <div class="header-banner flex-between">
+                    <div>
+                        <h2>Document Studio</h2>
+                        <p>Manage documents in the vector store</p>
+                    </div>
+                    <button class="btn btn-outline" id="refresh-docs-btn"><i data-lucide="refresh-cw"></i> Refresh</button>
+                </div>
+
+                <div id="docs-list" class="docs-grid scroll-y mt-4">
+                    <!-- Document cards go here -->
+                </div>
+            </section>
+
+            <!-- TAB: CHUNKING -->
+            <section id="chunk-tab" class="tab-content">
+                <div class="header-banner">
+                    <h2>Chunking Playground</h2>
+                    <p>Compare how different strategies split your text</p>
+                </div>
+
+                <div class="chunking-controls glass-panel mt-4">
+                    <textarea id="sample-text" class="glass-input w-full h-32 mb-4" placeholder="Paste some text here to test chunking strategies..."></textarea>
+                    <div class="flex-between align-center">
+                        <div class="form-group row-group">
+                            <label>Target Size:</label>
+                            <input type="number" id="test-chunk-size" class="glass-input form-sm" value="200">
+                        </div>
+                        <button id="run-compare-btn" class="btn btn-primary">Run Comparison</button>
+                    </div>
+                </div>
+
+                <div id="compare-results" class="compare-results mt-4 scroll-y hide">
+                    <!-- Comparison columns go here -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hide">
+        <i data-lucide="info"></i>
+        <span id="toast-message">Notification</span>
+    </div>
+
+    <!-- Script -->
+    <script src="/static/main.js"></script>
+</body>
+</html>
